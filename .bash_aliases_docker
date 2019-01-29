@@ -1,0 +1,1 @@
+alias ipython='docker run --rm -it ipython'
