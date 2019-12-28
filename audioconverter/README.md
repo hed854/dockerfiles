@@ -1,7 +1,14 @@
 # Audioconverter
 
+0) Import a zip file with audio
+
+curl https://transfer.sh/abcd/myzip.zip -o input/myzip.zip
+
+1) Launch Audioconverter
+
 ```
-docker run --rm -it --entrypoint '' -v $(pwd)/input:/tmp/input audioconverter /bin/bash
-timidity /tmp/input/file.mid -0w -o - | ffmpeg -i - -acodec libmp3lame -ab 64k /tmp/input/file.mp3
-curl --upload-file input/file.mp3 https://transfer.sh/file.mp3
+docker run --rm -it --entrypoint '' -v $(pwd)/input:/tmp/input audioconverter midi.py /tmp/input/myzip.zip
 ```
+
+2) Get the converted zip
+
