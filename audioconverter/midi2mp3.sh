@@ -3,23 +3,27 @@
 # install tree and zip
 
 INPUT_FILE="$1"
-OUTPUT_TYPE="mp3"
+OUTPUT_FOLDER="mp3"
 
-cd /tmp/input
-unzip INPUT_FILE 
-mkdir ${OUTPUT_TYPE}
+if [ ! -d ${OUTPUT_FOLDER} ]; then
+  mkdir -p ${OUTPUT_FOLDER}
+else
+  rm -rf ${OUTPUT_FOLDER}/*
+fi
 
-for dir in */; do
-#	echo "$dir"
-  # Create mirror in output dir
-  mkdir -p ${OUTPUT_TYPE}/${dir}
-  for file in ${dir}; do
-      if [[ $file == *.kar || $file == *.mid ]]; then
-        timidity $file -0w -o - | ffmpeg -i - -acodec libmp3lame -ab 64k ${OUTPUT_TYPE}/${dir}
-      fi
-    done
-done
+unzip ${INPUT_FILE} -d ${OUTPUT_FOLDER}
 
-zip -r ${OUTPUT_TYPE}.zip ${OUTPUT_TYPE}
+# get file list
+find ${OUTPUT_FOLDER} \( -name '*.kar' -o -name '*.mid' \) > filelist.txt
 
-curl --upload-file ${OUTPUT_TYPE}.zip https://transfer.sh/${OUTPUT_TYPE}.zip
+# convert based on the file list
+while read line; do
+  timidity "${line}" -Ow -o - | ffmpeg -i - -acodec libmp3lame -ab 64k "${line}.mp3" ;
+done < filelist.txt
+
+# remove midi files
+find ${OUTPUT_FOLDER} \( -name '*.kar' -o -name '*.mid' \) -exec rm -rf {} \;
+
+# zip output
+zip -r ${OUTPUT_FOLDER}.zip ${OUTPUT_FOLDER}
+mv ${OUTPUT_FOLDER}.zip /tmp/input
